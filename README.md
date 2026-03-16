@@ -1,16 +1,55 @@
-# 📚 Classroom Temperature Prediction Model
+# 🌡️ Classroom Temperature Predictor (Random Forest Regressor)
 
-## 1. Overview
-This project contains a Machine Learning training script that uses Gradient Boosting (HistGradientBoostingRegressor) to predict the indoor temperature of a classroom. It learns from environmental factors, room occupancy, time of day, and physical location within the room. 
+## 📖 Project Overview
+This project uses Machine Learning to predict the localized indoor temperature of a classroom. It utilizes a **Random Forest Regressor** to analyze various environmental, temporal, and spatial factors (such as the number of people, class duration, outside temperature, and grid location) to accurately forecast the indoor temperature.
 
-The script reads a structured dataset, automatically cleans and engineers the data, trains a model, optimizes its settings, and evaluates its accuracy. Finally, it exports the trained model as a `.joblib` file so it can be deployed or used in other applications without needing to be retrained.
+The pipeline is fully automated—handling everything from raw data cleaning and feature engineering to hyperparameter tuning and model evaluation.
 
 ---
 
-## 2. Input Data Requirements
+## ⚙️ Model Architecture & Pipeline
 
-The script expects a CSV file named `classroom_temperature_template_blank.xlsx - Data Entry.csv`. 
-*(Note: The script automatically skips the first 6 rows, which contain metadata.)*
+### 1. Data Preprocessing & Feature Engineering
+Before training, the script processes the raw CSV data using Scikit-Learn's `Pipeline` and `ColumnTransformer`:
+* **Time Extraction:** Converts `Start Time` into a continuous `Start Hour` to capture time-of-day trends.
+* **Duration Calculation:** Calculates `Class Duration (mins)` by finding the difference between `Start Time` and `Stop Time`.
+* **Binary Mapping:** Converts the text-based `Window Open?` feature into standard binary (1 or 0).
+* **Handling Missing Data:** Automatically imputes missing numeric data using the `median` and missing categorical data using the `most_frequent` value.
+* **Scaling & Encoding:** Standardizes numeric features (`StandardScaler`) and One-Hot Encodes categorical features (`OneHotEncoder`).
+
+### 2. The Machine Learning Algorithm
+* **Algorithm:** `RandomForestRegressor`
+* **Why Random Forest?** Random Forests excel at tabular data with complex, non-linear physical rules (e.g., "If windows are open AND it is the afternoon, temp changes by X"). 
+* **Hyperparameter Tuning:** The script uses `GridSearchCV` with 3-fold Cross-Validation to automatically find the optimal number of trees (`n_estimators`), tree depth (`max_depth`), and split criteria (`min_samples_split`).
+
+---
+
+## 📊 Input Data Requirements
+
+The script expects a dataset (CSV) containing the following target and feature columns:
+
+**Target Variable:**
+* `Indoor Temp (°C)`
+
+**Input Features:**
+* `Day` (Categorical)
+* `Session` (Categorical)
+* `Start Time` & `Stop Time` (Used to calculate Hour and Duration)
+* `Outside Temp (°C)` (Numeric)
+* `Total People in Classroom` (Numeric)
+* `Grid` (Categorical - specific zone in the classroom)
+* `Corner` (Categorical - specific corner in the grid)
+* `Humidity (%)` (Numeric)
+* `Window Open?` (Categorical: Yes/No)
+
+---
+
+## 🚀 How to Run the Code
+
+### Prerequisites
+Make sure you have the required Python libraries installed. You can install them via pip:
+```bash
+pip install pandas numpy scikit-learn
 
 ### Target Variable (What the model is predicting):
 * **`Indoor Temp (°C)`**: The actual recorded temperature inside the classroom (Float).
